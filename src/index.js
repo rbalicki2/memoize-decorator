@@ -3,6 +3,7 @@
  */
 
 const SENTINEL = {};
+const memoizedMap = new Map();
 
 export default function memoize(target, name, descriptor) {
   if (typeof descriptor.value === 'function') {
@@ -17,14 +18,14 @@ export default function memoize(target, name, descriptor) {
 function _memoizeGetter(target, name, descriptor) {
   let memoizedName = `_memoized_${name}`;
   let get = descriptor.get;
-  target[memoizedName] = SENTINEL;
+  memoizedMap.set(memoizedName, SENTINEL);
   return {
     ...descriptor,
     get() {
-      if (this[memoizedName] === SENTINEL) {
-        this[memoizedName] = get.call(this);
+      if (memoizedMap.get(memoizedName) === SENTINEL) {
+        memoizedMap.set(memoizedName, get.call(this));
       }
-      return this[memoizedName];
+      return memoizedMap.get(memoizedName);
     }
   };
 }
@@ -35,14 +36,14 @@ function _memoizeMethod(target, name, descriptor) {
   }
   let memoizedName = `_memoized_${name}`;
   let value = descriptor.value;
-  target[memoizedName] = SENTINEL;
+  memoizedMap.set(memoizedName, SENTINEL);
   return {
     ...descriptor,
     value() {
-      if (this[memoizedName] === SENTINEL) {
-        this[memoizedName] = value.call(this);
+      if (memoizedMap.get(memoizedName) === SENTINEL) {
+        memoizedMap.set(memoizedName, value.call(this));
       }
-      return this[memoizedName];
+      return memoizedMap.get(memoizedName);
     }
   };
 }
